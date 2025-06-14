@@ -1,25 +1,29 @@
 pipeline {
     agent any
 
+    environment {
+        ANSIBLE_HOST_KEY_CHECKING = 'False'
+    }
+
     stages {
-        stage('Clone Repository') {
+        stage('Checkout Code') {
             steps {
-                git branch: 'dev', url: 'https://github.com/Siddhantt/Insurance-flask-app'
+                git branch: 'staging', url: 'https://github.com/Siddhantt/Insurance-flask-app.git'
             }
         }
 
         stage('Install Dependencies') {
             steps {
-                sh 'python3 -m venv venv'
-                sh './venv/bin/pip install -r requirements.txt'
+                sh '''
+                    sudo apt-get update
+                    sudo apt-get install -y python3-pip sshpass ansible
+                '''
             }
         }
 
         stage('Run Ansible Playbook') {
             steps {
-                // Use your local Ansible setup from WSL
                 sh '''
-                    export ANSIBLE_HOST_KEY_CHECKING=False
                     ansible-playbook -i inventory.ini deploy.yml
                 '''
             }
