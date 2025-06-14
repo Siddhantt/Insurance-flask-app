@@ -6,18 +6,17 @@ pipeline {
     }
 
     stages {
-        stage('Clone Repo') {
+        stage('Checkout Code') {
             steps {
-                // Replace with your actual GitHub repo
-                git 'https://github.com/Siddhantt/insurance-flask-app.git'
+                git branch: 'staging', url: 'https://github.com/Siddhantt/Insurance-flask-app.git'
             }
         }
 
         stage('Install Dependencies') {
             steps {
                 sh '''
-                    apt update
-                    apt install -y ansible sshpass python3 python3-pip python3-venv
+                     apt-get update
+                     apt-get install -y python3-pip sshpass ansible
                 '''
             }
         }
