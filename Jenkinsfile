@@ -14,18 +14,14 @@ pipeline {
 
         stage('Install Dependencies') {
             steps {
-                sh '''
-                     apt-get update
-                     apt-get install -y python3-pip sshpass ansible
-                '''
+                sh 'python3 -m venv venv'
+                sh './venv/bin/pip install -r requirements.txt'
             }
         }
 
         stage('Run Ansible Playbook') {
             steps {
-                sh '''
-                    ansible-playbook -i inventory.ini deploy.yml
-                '''
+                sh 'ansible-playbook -i inventory.ini deploy.yml'
             }
         }
     }
