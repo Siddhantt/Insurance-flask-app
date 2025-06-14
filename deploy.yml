@@ -1,0 +1,62 @@
+- name: Deploy Flask Insurance App
+  hosts: docker-target
+  become: true
+
+  vars:
+    app_dir: /root/insurance-flask-app
+
+  tasks:
+    - name: Install required packages
+      apt:
+        name:
+          - python3
+          - python3-pip
+          - python3-venv
+        update_cache: yes
+
+    - name: Create app directory
+      file:
+        path: "{{ app_dir }}"
+        state: directory
+        owner: root
+        group: root
+        mode: '0755'
+
+    - name: Copy application files
+      copy:
+        src: .
+        dest: "{{ app_dir }}"
+        owner: root
+        group: root
+        mode: '0755'
+
+    - name: Create virtual environment
+      command: python3 -m venv venv
+      args:
+        chdir: "{{ app_dir }}"
+      become: true
+
+    - name: Check if pip exists in venv
+      stat:
+        path: "{{ app_dir }}/venv/bin/pip"
+      register: pip_check
+
+    - name: Fail if pip not found
+      fail:
+        msg: "Virtual environment pip not found. venv may not have been created properly."
+      when: not pip_check.stat.exists
+
+    - name: Install Python dependencies
+      pip:
+        requirements: requirements.txt
+        virtualenv: "{{ app_dir }}/venv"
+      args:
+        chdir: "{{ app_dir }}"
+      become: true
+
+    - name: Run Flask app in background
+      shell: nohup ./venv/bin/python3 app.py > flask.log 2>&1 &
+      args:
+        chdir: "{{ app_dir }}"
+      become: true
+
